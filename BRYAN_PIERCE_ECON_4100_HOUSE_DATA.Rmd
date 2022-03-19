@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+---
+```{r}
+#RT <- opts_knit$set(root.dir="/Users/Bryan/Desktop/ECON 4100")  #knits data
+#RT
+```
+
+```{r}
+RT <- read.csv("/Users/Bryan/Desktop/ECON 4100/Table#1_Bryan_Pierce.csv")   #reads csv
+RT
+```
+
+```{r}
+#stat.desc(RT)     #create descriptive stats
+```
+
+
+```{r}
+RT$ln_price <- log(RT$price)      #natural log of price
+RT
+```
+```{r}
+#stat.desc(RT)     #descriptive stats with ln_price included
+```
+
+
+```{r}
+RT2 <- read.csv("/Users/Bryan/Desktop/ECON 4100/Book5.csv")   #reads csv
+RT2
+```
+```{r}
+corr <- round(cor(RT2), 1)     #correlation matrix for each X
+```
+```{r}
+cor(RT2)
+```
+
+
+
+```{r} 
+      #create dummy variable for top 5 school districts in STL area
+
+RT$dummy_schools <- ifelse(RT$sch_dist == "Ladue" | RT$sch_dist == "Parkway" | RT$sch_dist == "Pattonville" | RT$sch_dist == "Kirkwood" | RT$sch_dist == "Rockwood", 1, 0)
+RT
+
+
+```
+```{r}
+regression <- lm(ln_price ~ area+sfla+rmbed+fixbath+dummy_schools, data=RT)
+regression         #main regression
+```
+```{r}
+summary(regression)              #summary of regression
+```
+```{r}
+anova(regression)              #get sum of squares
+```
+
+```{r}
+revised_regression <- lm(ln_price ~ area+sfla+stories+rmbed+dummy_schools, data=RT)
+revised_regression       #revised regression
+```
+
+```{r}
+summary(revised_regression)     #summary of revised regression
+```
+```{r}
+auxilary_regression <- lm(sfla ~ area+rmbed+fixbath+dummy_schools, data=RT)
+auxilary_regression     #check for multicolliniarity
+```
+```{r}
+summary(auxilary_regression)     #summary of aux regression
+```
+```{r}
+residuals <- resid(regression)                      #get residuals for park test
+residuals_squared <- (residuals^2)
+ln_residuals_squared <- log(residuals_squared)
+
+ln_residuals_squared
+```
+```{r}
+z_sfla <- log(RT$sfla)       #get log of sfla for proportionality factor
+```                                 
+```{r}
+park_test_regression <- lm(ln_residuals_squared ~ z_sfla, data=RT)
+park_test_regression         #park test regression
+```
+
+```{r}
+summary(park_test_regression)         #summary of park test regression
+```
+```{r}
+RT$wls_price <- (RT$ln_price/RT$sfla)             #divide all X's by sfla for wls
+RT$wls_area <- (RT$area/RT$sfla)                     
+RT$wls_sfla <- (1/RT$sfla)
+RT$wls_rmbed <- (RT$rmbed/RT$sfla)
+RT$wls_fixbath <- (RT$fixbath/RT$sfla)
+RT$wls_dummy_schools <- (RT$dummy_schools/RT$sfla)
+
+```
+
+```{r}
+wls_regression <- lm(wls_price ~ wls_area+wls_sfla+wls_rmbed+wls_fixbath+wls_dummy_schools, data=RT)
+
+wls_regression           #wls regression
+```
+```{r}
+summary(wls_regression)       #summary of wls regression
+```
+
+
+
+
+
+
+
+
